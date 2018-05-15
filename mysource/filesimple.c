@@ -8,22 +8,6 @@
  * tokens is predictable.
  */
 
-static const char *JSON_STRING =
-	"{\"user\": \"johndoe\", \"admin\": false, \"uid\": 1000,\n  "
-	"\"groups\": [\"users\", \"wheel\", \"audio\", \"video\"]}";
-	//1번째 토큰에는 전체가 담기고
-	//2번째 토큰에는 user가 담김
-	//"시작해서 "가져감
-	//3번째 토큰에서는 johndoe가들어감
-	//4번째 Admin
-	//5번쨰 false
-	//6번째 uid
-	//7번째 1000
-	//8번째 groups
-	//9번째 users
-	//10번째 wheels
-	//11번째 audio
-	//12번째 video
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
@@ -33,7 +17,7 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 	return -1;
 }
 
-void readJSONFILE(){
+char* readJSONFILE(){
 	FILE *f=NULL;
 	f=fopen("data.json","r");
 
@@ -51,13 +35,15 @@ void readJSONFILE(){
 			strcat(JSON_STRING,oneline);
 	}
 	fclose(f);
-	printf("%s",JSON_STRING);
+
+	return JSON_STRING;
 }
 
 
 int main() {
 	int i;
-	readJSONFILE();
+	char* JSON_STRING=readJSONFILE();
+
 	jsmntok_t t[128]; // We expect no more than 128 tokens, 이게 토큰이고 여기다가 parse해서 채움
 
 	/* Creates a new parser based over a given  buffer with an array of tokens available. */
@@ -81,24 +67,24 @@ int main() {
 
 	/* Loop over all keys of the root object */
 	for (i = 1; i < r; i++) {
-		if (jsoneq(JSON_STRING, &t[i], "user") == 0) {
+		if (jsoneq(JSON_STRING, &t[i], "name") == 0) {
 			/* We may use strndup() to fetch string value */
 			printf("- User: %.*s\n", t[i+1].end-t[i+1].start,
 					JSON_STRING + t[i+1].start);
 			i++;
-		} else if (jsoneq(JSON_STRING, &t[i], "admin") == 0) {
+		} else if (jsoneq(JSON_STRING, &t[i], "keywords") == 0) {
 			/* We may additionally check if the value is either "true" or "false" */
-			printf("- Admin: %.*s\n", t[i+1].end-t[i+1].start,
+			printf("- keywords: %.*s\n", t[i+1].end-t[i+1].start,
 					JSON_STRING + t[i+1].start);
 			i++;
-		} else if (jsoneq(JSON_STRING, &t[i], "uid") == 0) {
+		} else if (jsoneq(JSON_STRING, &t[i], "description") == 0) {
 			/* We may want to do strtol() here to get numeric value */
 			printf("- UID: %.*s\n", t[i+1].end-t[i+1].start,
 					JSON_STRING + t[i+1].start);
 			i++;
-		} else if (jsoneq(JSON_STRING, &t[i], "groups") == 0) {
+		} else if (jsoneq(JSON_STRING, &t[i], "examples") == 0) {
 			int j;
-			printf("- Groups:\n");
+			printf("- examples:\n");
 			if (t[i+1].type != JSMN_ARRAY) {
 				continue; /* We expect groups to be an array of strings */
 			}
@@ -107,10 +93,11 @@ int main() {
 				printf("  * %.*s\n", g->end - g->start, JSON_STRING + g->start);
 			}
 			i += t[i+1].size + 1;
-		} else {
+		}/* else {
 			printf("Unexpected key: %.*s\n", t[i].end-t[i].start,
 					JSON_STRING + t[i].start);
 		}
+		*/
 	}
 	return EXIT_SUCCESS;
 }
