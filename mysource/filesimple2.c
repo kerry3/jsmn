@@ -19,7 +19,7 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 
 char* readJSONFILE(){
 	FILE *f=NULL;
-	f=fopen("data.json","r");
+	f=fopen("data3.json","r");
 
 	char oneline[255];
 	char* JSON_STRING=(char*)malloc(50);
@@ -39,12 +39,12 @@ char* readJSONFILE(){
 	return JSON_STRING;
 }
 
-/*
+
 void jsonNameList(char *jsonstr, jsmntok_t *t, int tokcount,int *nameTokIndex){
 	int i;
 	int count=0;
 	for(i=0; i<tokcount; i++){
-		if(t[i].size>0&&t[i].type==JSMN_STRING){ printf("%d %.*s\n",i,t[i].end-t[i].start,
+		if(t[i].parent==0){ printf("%d %.*s\n",i,t[i].end-t[i].start,
 				jsonstr + t[i].start); // size 가 0보다 높은게 key 값임, i값으로 해야 key 값이 나옴
 				nameTokIndex[count++]=i;
 			}
@@ -53,7 +53,7 @@ void jsonNameList(char *jsonstr, jsmntok_t *t, int tokcount,int *nameTokIndex){
 	//for(i=0; i<count; i++) printf("%d\n",nameTokIndex[i]);
 
 }
-*/
+
 
 /*
 void printNameList(char *jsonstr, jsmntok_t *t, int* nameTokIndex){
@@ -64,7 +64,8 @@ void printNameList(char *jsonstr, jsmntok_t *t, int* nameTokIndex){
 }
 */
 
-/*
+
+
 void selectNameList(char *jsonstr, jsmntok_t *t, int* nameTokIndex){
 	while(1){
 		int i;
@@ -72,13 +73,8 @@ void selectNameList(char *jsonstr, jsmntok_t *t, int* nameTokIndex){
 		scanf("%d",&i);
 		if(i==0) exit(1);
 		printf("%.*s\n", t[nameTokIndex[i-1]].end-t[nameTokIndex[i-1]].start,jsonstr + t[nameTokIndex[i-1]].start);
-		printf("%.*s\n", t[nameTokIndex[i-1]+1].end-t[nameTokIndex[i-1]+1].start,jsonstr + t[nameTokIndex[i-1]+1].start);
+		//printf("%.*s\n", t[nameTokIndex[i-1]+1].end-t[nameTokIndex[i-1]+1].start,jsonstr + t[nameTokIndex[i-1]+1].start);
 	}
-}
-*/
-
-void ex8(char *jsonstr, jsmntok_t *t){
-
 }
 
 
@@ -98,8 +94,16 @@ int main() {
 	int r;
 	r = jsmn_parse(&p, JSON_STRING, strlen(JSON_STRING), t, sizeof(t)/sizeof(t[0])); //number of token 받음
 
+/*
+	printf("Token's cout : %d\n",r);
+	for (i = 0; i < r; i++){
+		printf("%.*s %d: start:%d, end:%d, size:%d, type:%d parent:%d\n",t[i].end-t[i].start,
+				JSON_STRING + t[i].start,i,t[i].start,t[i].end,t[i].size,t[i].type,t[i].parent);
+	}
+*/
+
 	jsonNameList(JSON_STRING,t,r,nameTokIndex);
 	//printNameList(JSON_STRING,t,nameTokIndex);
-	//selectNameList(JSON_STRING,t,nameTokIndex);
+	selectNameList(JSON_STRING,t,nameTokIndex);
 	return EXIT_SUCCESS;
 }
