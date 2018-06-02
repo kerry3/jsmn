@@ -17,9 +17,9 @@
  2.objectlist 뽑기 & 검색했을 시 data출력
  */
 
-char* readJSONFILE();
-void nameList(char *jsonstr, jsmntok_t *t, int tokcount,int *nameTokIndex);
-void objectList(char *jsonstr, jsmntok_t *t, int flag, int tokcount,int*arrForObjectIndex);
+char* readJSONFILE(int *flagForData4);
+void nameList(char *jsonstr, jsmntok_t *t, int tokcount,int *nameTokIndex,int flagForData4);
+void objectList(char *jsonstr, jsmntok_t *t, int flag, int tokcount,int*arrForObjectIndex,int flagForData4);
 void selectObjectNumAndPrint(char *jsonstr, jsmntok_t *t, int* arrForObjectIndex);
 void whatIsStart(jsmntok_t *t, int *flag);
 
@@ -27,8 +27,8 @@ int main() {
 	int nameTokIndex[100]; // key값 토큰 인덱스 담기 위해
 	int arrForObjectIndex[100]; // object 토큰 인덱스 담기위해
 
-	int i;
-	char* JSON_STRING=readJSONFILE();
+	int flagForData4=0;
+	char* JSON_STRING=readJSONFILE(&flagForData4);
 
 	jsmntok_t t[128]; // We expect no more than 128 tokens, 이게 토큰이고 여기다가 parse해서 채움
 
@@ -39,6 +39,7 @@ int main() {
 	int r;
 	r = jsmn_parse(&p, JSON_STRING, strlen(JSON_STRING), t, sizeof(t)/sizeof(t[0])); //number of token 받음
 /*
+	int i;
 	printf("Token's cout : %d\n",r);
 	for (i = 0; i < r; i++){
 		printf("%.*s %d: start:%d, end:%d, size:%d, type:%d parent:%d\n",t[i].end-t[i].start,
@@ -49,18 +50,19 @@ int main() {
 	int flag;
 	whatIsStart(t,&flag);
 
-	nameList(JSON_STRING,t,r,nameTokIndex);
-	objectList(JSON_STRING,t,flag,r,arrForObjectIndex);
+	nameList(JSON_STRING,t,r,nameTokIndex,flagForData4);
+	objectList(JSON_STRING,t,flag,r,arrForObjectIndex,flagForData4);
 	selectObjectNumAndPrint(JSON_STRING,t,arrForObjectIndex);
 	return EXIT_SUCCESS;
 }
 
-char* readJSONFILE(){
+char* readJSONFILE(int *flagForData4){
 	FILE *f=NULL;
 
 	char file_name[30];
 	printf("원하는 파일명 입력");
 	scanf("%s",file_name);
+	if(strcmp(file_name,"data4")==0) *flagForData4=4; // data4파일 들어옴
 	strcat(file_name,".json");
 	f=fopen(file_name,"r");
 
@@ -82,10 +84,24 @@ char* readJSONFILE(){
 	return JSON_STRING;
 }
 
-void nameList(char *jsonstr, jsmntok_t *t, int tokcount,int *nameTokIndex){
+void nameList(char *jsonstr, jsmntok_t *t, int tokcount,int *nameTokIndex, int flagForData4){
 	int i;
 	int count=0;
 	printf("********NAME LIST********\n\n");
+
+	if(flagForData4==4){
+		for(i=2; i<tokcount; i++){
+			if(t[i].size==1&&t[i].type==JSMN_STRING){
+				nameTokIndex[count++]=i;
+				printf("[Name %d]%.*s\n",count,t[i].end-t[i].start,jsonstr + t[i].start);
+			}
+		}
+	}
+
+
+
+
+	else{
 	for(i=0; i<tokcount; i++){
 		if(t[i].size==1&&t[i].type==JSMN_STRING) //key 값 찾는 조건
 		{
@@ -94,10 +110,29 @@ void nameList(char *jsonstr, jsmntok_t *t, int tokcount,int *nameTokIndex){
 			}
 	}
 }
+}
 
-void objectList(char *jsonstr, jsmntok_t *t, int flag, int tokcount, int* arrForObjectIndex){
+void objectList(char *jsonstr, jsmntok_t *t, int flag, int tokcount, int* arrForObjectIndex,int flagForData4){
 	int count=0; //object의 개수 의미
+	int i;
+
 	printf("\n********Object List********\n\n");
+
+	if(flagForData4==4){
+		for(i=0; i<tokcount; i++){
+			if(t[i].parent==2) //object 찾음
+			{
+				arrForObjectIndex[count++]=i; // object token의 index 를 이 배열에 넣는다.
+				printf("[Name %d] %.*s\n",count,t[i+2].end-t[i+2].start,
+					 jsonstr + t[i+2].start); // object의 index에서 +2한 값이 name의 value값임
+
+			}
+		}
+	}
+
+
+
+	else{
 
 	if(flag==0)//object하나만, 처음에 object로 시작함
 	{
@@ -106,8 +141,6 @@ void objectList(char *jsonstr, jsmntok_t *t, int flag, int tokcount, int* arrFor
 			 jsonstr + t[2].start);
 
 	}
-
-	int i;
 
 	if(flag==1)//배열로 시작, object 여러개
 	{
@@ -120,6 +153,7 @@ void objectList(char *jsonstr, jsmntok_t *t, int flag, int tokcount, int* arrFor
 
 			}
 		}
+	}
 	}
 }
 
