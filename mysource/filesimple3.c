@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +9,7 @@
  * tokens is predictable.
  */
 
- //example12
+ //example12...이하
 
  // flag 가 0이면 object하나만 있는 json data, 1이면 배열이 먼저나오고 object가 두 개인 json data
 
@@ -29,7 +30,7 @@ int main() {
 
 	int flagForData4=0;
 	char* JSON_STRING=readJSONFILE(&flagForData4);
-
+	if(JSON_STRING==NULL) return EXIT_SUCCESS;
 	jsmntok_t t[128]; // We expect no more than 128 tokens, 이게 토큰이고 여기다가 parse해서 채움
 
 	/* Creates a new parser based over a given  buffer with an array of tokens available. */
@@ -65,6 +66,12 @@ char* readJSONFILE(int *flagForData4){
 	if(strcmp(file_name,"data4")==0) *flagForData4=4; // data4파일 들어옴
 	strcat(file_name,".json");
 	f=fopen(file_name,"r");
+
+	if(f==NULL){
+		printf("%s파일이 존재하지 않습니다\n",file_name);
+		return NULL;
+	}
+
 
 	char oneline[255];
 	char* JSON_STRING=(char*)malloc(50);
