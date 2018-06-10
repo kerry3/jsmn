@@ -1,13 +1,13 @@
 # You can put your build options here
 -include config.mk
 
-all: libjsmn.a 
+all: libjsmn.a
 
 libjsmn.a: jsmn.o
 	$(AR) rc $@ $^
 
 %.o: %.c jsmn.h
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) $(DEBUG) -c $(CFLAGS) $< -o $@
 
 test: test_default test_strict test_links test_strict_links
 test_default: test/tests.c
@@ -25,17 +25,28 @@ test_strict_links: test/tests.c
 
 jsmn_test.o: jsmn_test.c libjsmn.a
 
-myexample: example/myjsonc.o libjsmn.a
+
+myexample1: mysource/filesimple.o libjsmn.a
+	$(CC) $(LDFLAGS) $^ -o $@
+myexample: example/simple.o libjsmn.a
+	$(CC) $(LDFLAGS) $^ -o $@
+tueexample: example/tueseven.o libjsmn.a
 	$(CC) $(LDFLAGS) $^ -o $@
 
 jsondump: example/jsondump.o libjsmn.a
+	$(CC) $(LDFLAGS) $^ -o $@
+myexample2: mysource/filesimple2.o libjsmn.a
+	$(CC) $(LDFLAGS) $^ -o $@
+myexample3: mysource/filesimple3.o libjsmn.a
+	$(CC) $(LDFLAGS) $^ -o $@
+myproduct: mysource/myproduct.o libjsmn.a
 	$(CC) $(LDFLAGS) $^ -o $@
 
 clean:
 	rm -f *.o example/*.o
 	rm -f *.a *.so
-	rm -f simple_example
+	rm -f tueexample
 	rm -f jsondump
 
-.PHONY: all clean test
 
+.PHONY: all clean test
